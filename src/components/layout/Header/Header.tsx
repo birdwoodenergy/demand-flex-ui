@@ -14,19 +14,22 @@ import {
   Box,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Link } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom"; // Import as RouterLink
 import SchemaIcon from "@mui/icons-material/Schema";
 import BoltIcon from "@mui/icons-material/Bolt";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import SpeedIcon from "@mui/icons-material/Speed";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import HelpIcon from "@mui/icons-material/Help";
+import HomeIcon from "@mui/icons-material/Home";
 import logo from "./../../../assets/img/logo.svg";
 
 const Header: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery("(max-width:600px)");
+  const isMobile = useMediaQuery("(max-width:830px)");
+  const location = useLocation();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [selectedMenuText, setSelectedMenuText] = React.useState<string>("");
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -36,77 +39,54 @@ const Header: React.FC = () => {
     setAnchorEl(null);
   };
 
+  const handleMenuItemClick = (text: string) => {
+    setSelectedMenuText(text);
+    handleMenuClose();
+  };
+
+  // Set selectedMenuText to "Home" when clicking on the logo
+  const handleLogoClick = () => {
+    setSelectedMenuText("Home");
+  };
+
   const menuItems = [
+    ...(isMobile
+      ? [
+          {
+            text: "Home",
+            icon: <HomeIcon style={{ marginRight: 8 }} />,
+            link: "/",
+          },
+        ]
+      : []),
     {
       text: "Single Line Diagram",
-      icon: (
-        <SchemaIcon
-          style={{
-            color: isMobile ? theme.palette.primary.main : "white",
-            marginRight: 8,
-          }}
-        />
-      ),
-      link: "/",
+      icon: <SchemaIcon style={{ marginRight: 8 }} />,
+      link: "/singlelinediagram",
     },
     {
       text: "Flexible Load Identification",
-      icon: (
-        <BoltIcon
-          style={{
-            color: isMobile ? theme.palette.primary.main : "white",
-            marginRight: 8,
-          }}
-        />
-      ),
-      link: "/about",
+      icon: <BoltIcon style={{ marginRight: 8 }} />,
+      link: "/flexibleloadnotification",
     },
     {
       text: "Uploads",
-      icon: (
-        <CloudUploadIcon
-          style={{
-            color: isMobile ? theme.palette.primary.main : "white",
-            marginRight: 8,
-          }}
-        />
-      ),
+      icon: <CloudUploadIcon style={{ marginRight: 8 }} />,
       link: "/uploads",
     },
     {
       text: "Monitoring Equipment",
-      icon: (
-        <SpeedIcon
-          style={{
-            color: isMobile ? theme.palette.primary.main : "white",
-            marginRight: 8,
-          }}
-        />
-      ),
+      icon: <SpeedIcon style={{ marginRight: 8 }} />,
       link: "/monitoring",
     },
     {
       text: "Solar & Battery",
-      icon: (
-        <WbSunnyIcon
-          style={{
-            color: isMobile ? theme.palette.primary.main : "white",
-            marginRight: 8,
-          }}
-        />
-      ),
+      icon: <WbSunnyIcon style={{ marginRight: 8 }} />,
       link: "/solar",
     },
     {
       text: "Site Questions",
-      icon: (
-        <HelpIcon
-          style={{
-            color: isMobile ? theme.palette.primary.main : "white",
-            marginRight: 8,
-          }}
-        />
-      ),
+      icon: <HelpIcon style={{ marginRight: 8 }} />,
       link: "/questions",
     },
   ];
@@ -115,14 +95,31 @@ const Header: React.FC = () => {
     <AppBar position="fixed">
       <Toolbar>
         <Grid container alignItems="center">
-          {/* Logo Grid Item */}
-          <Grid item xs={1}>
-            <img src={logo} alt="Logo" style={{ width: isMobile ? "100%" : "20%", height: "auto" }} />
+          <Grid item xs={8} sm={8} md={1} lg={1}>
+            {/* Link to="/" with onClick handler to set selectedMenuText to "Home" */}
+            <RouterLink
+              to="/"
+              style={{ textDecoration: "none", color: "inherit" }}
+              onClick={handleLogoClick}
+            >
+              <img
+                src={logo}
+                alt="Logo"
+                style={{ width: isMobile ? "30px" : "25%", height: "auto" }}
+              />
+            </RouterLink>
+            {isMobile ? (
+              <span style={{ paddingLeft: 10, verticalAlign: "super" }}>
+                {selectedMenuText}
+              </span>
+            ) : (
+              ""
+            )}
           </Grid>
 
-          {/* Menu Grid Item */}
-          <Grid item xs={11}>
+          <Grid item xs={4} sm={4} md={11} lg={11}>
             {isMobile ? (
+              // Mobile Menu Button and Menu Items
               <Box display="flex" justifyContent="flex-end" alignItems="center">
                 <IconButton
                   edge="end"
@@ -140,9 +137,20 @@ const Header: React.FC = () => {
                   {menuItems.map((item) => (
                     <MenuItem
                       key={item.text}
-                      component={Link}
+                      component={RouterLink} // Use RouterLink for navigation
                       to={item.link}
-                      onClick={handleMenuClose}
+                      onClick={() => {
+                        handleMenuItemClick(item.text);
+                        handleMenuClose();
+                      }}
+                      sx={{
+                        backgroundColor:
+                          location.pathname === item.link
+                            ? theme.palette.secondary.main
+                            : "transparent",
+                        color:
+                          location.pathname === item.link ? "white" : "inherit",
+                      }}
                     >
                       <Box display="flex" alignItems="center">
                         {item.icon}
@@ -153,22 +161,60 @@ const Header: React.FC = () => {
                 </Menu>
               </Box>
             ) : (
-              <List
-                component="nav"
-                sx={{ display: "flex", flexDirection: "row" }}
-              >
-                {menuItems.map((item) => (
-                  <ListItemButton
-                    component={Link}
-                    to={item.link}
-                    key={item.text}
-                  >
-                    <Box display="flex" alignItems="center">
-                      {item.icon}
-                      <ListItemText primary={item.text} />
-                    </Box>
-                  </ListItemButton>
-                ))}
+              // Desktop Menu Items
+              <List component="nav" sx={{ display: "flex", flexDirection: "row" }}>
+                {menuItems
+                  .filter((item) => item.text !== "Home")
+                  .map((item) => (
+                    <ListItemButton
+                      component={RouterLink} // Use RouterLink for navigation
+                      to={item.link}
+                      key={item.text}
+                      onClick={() => handleMenuItemClick(item.text)}
+                      sx={{
+                        borderBottom: `3px solid ${
+                          location.pathname === item.link
+                            ? theme.palette.secondary.main
+                            : "transparent"
+                        }`,
+                        borderRadius: theme.shape.borderRadius,
+                        "&:hover": {
+                          backgroundColor: "#2D4A69",
+                          color: "white",
+                        },
+                        color:
+                          location.pathname === item.link
+                            ? theme.palette.secondary.main
+                            : "white", // Set icon color dynamically
+                      }}
+                    >
+                      <Box display="flex" alignItems="center">
+                        {React.cloneElement(item.icon, {
+                          sx: {
+                            color:
+                              location.pathname === item.link
+                                ? theme.palette.secondary.main
+                                : "white",
+                          },
+                        })}
+                        <ListItemText
+                          primary={item.text}
+                          primaryTypographyProps={{
+                            sx: {
+                              color:
+                                location.pathname === item.link
+                                  ? theme.palette.secondary.main
+                                  : "white",
+                              fontWeight:
+                                location.pathname === item.link
+                                  ? "bold"
+                                  : "normal",
+                            },
+                          }}
+                        />
+                      </Box>
+                    </ListItemButton>
+                  ))}
               </List>
             )}
           </Grid>
