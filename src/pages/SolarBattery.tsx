@@ -51,8 +51,6 @@ const SolarBattery: React.FC = () => {
 
       {/* Spacer Grid Items */}
       <Grid item xs={12} />
-      <Grid item xs={12} />
-      <Grid item xs={12} />
 
       {/* Heading title 'Battery Identification' */}
       <Grid item xs={12}>
@@ -90,8 +88,6 @@ const SolarBattery: React.FC = () => {
       </Grid>
 
       {/* Spacer Grid Items */}
-      <Grid item xs={12} />
-      <Grid item xs={12} />
       <Grid item xs={12} />
 
       {/* Heading title 'Additional Notes' */}
